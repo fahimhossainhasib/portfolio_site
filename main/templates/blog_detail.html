@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load markdown_extras %}
+{% block content %}
+<article class="prose dark:prose-invert max-w-none">
+  <h1>{{ post.title }}</h1>
+  <p class="text-sm text-gray-500">{{ post.created_at }}</p>
+  {% if post.thumbnail %}
+    <img src="{{ post.thumbnail.url }}" class="w-full max-h-[400px] object-cover my-4 rounded" alt="{{ post.title }}">
+  {% endif %}
+  <div>{{ post.content|markdown }}</div>
+</article>
+{% endblock %}
