@@ -24,3 +24,6 @@ __pycache__/
 # Media and static files
 media/
 staticfiles/
+
+# Model
+models/models/buffalo_l*
