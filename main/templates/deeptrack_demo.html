@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: auto; padding: 2rem;">
+    <h1 style="font-size: 2rem; margin-bottom: 1rem;">Extracted Video</h1>
+    <p style="margin-bottom: 1.5rem; color: #555;">Here is the extracted video where the face appears.</p>
+
+    <video controls style="width: 100%; border-radius: 10px; box-shadow: 0 0 12px rgba(0,0,0,0.2);">
+        <source src="{{ output_url }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <a href="{{ output_url }}" download style="display: inline-block; margin-top: 1.5rem; padding: 0.7rem 1.4rem; background-color: #1e3c72; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+        Download Video
+    </a>
+</div>
+<div class="mt-6">
+    <a href="{% url 'project_demo' slug='deeptrack' %}" class="text-white-600 hover:underline text-md">Process another video</a>
+  </div>
+{% endblock %}
+
+
+
+<!-- <div class="max-w-xl mx-auto px-4 py-10 text-center">
+  <h1 class="text-3xl font-bold text-gray-800 mb-4">Processing Complete</h1>
+  <p class="text-gray-600 mb-6">Your video has been successfully processed. You can download it below.</p>
+
+  <a href="{{ output_url }}" download class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-200">
+    ⬇️ Download Your Video
+  </a>
+
+  <div class="mt-6">
+    <a href="{% url 'project_demo' slug='deeptrack' %}" class="text-blue-600 hover:underline text-sm">Process another video</a>
+  </div>
+</div> -->

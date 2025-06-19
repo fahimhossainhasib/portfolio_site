@@ -19,36 +19,34 @@
   <div class="bg-white/10 border border-gray-700 rounded-xl p-6 backdrop-blur-sm shadow-lg">
     <h3 class="text-xl font-semibold text-white mb-4 border-b border-gray-600 pb-2">Top Blog Posts</h3>
     <div class="grid md:grid-cols-3 gap-4">
-  {% for post in latest_posts %}
-    <a href="{% url 'blog_detail' slug=post.slug %}" class="block rounded overflow-hidden shadow hover:shadow-lg transition">
-      {% if post.thumbnail %}
+      {% for post in latest_posts %}
+        <a href="{% url 'blog_detail' slug=post.slug %}" class="block rounded overflow-hidden shadow hover:shadow-lg transition">
+        {% if post.thumbnail %}
         <img src="{{ post.thumbnail.url }}" alt="{{ post.title }}" class="w-full h-48 object-cover">
       {% endif %}
       <div class="p-4 bg-white dark:bg-gray-800">
         <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ post.title }}</h3>
       </div>
-    </a>
-  {% endfor %}
-</div>
+        </a>
+      {% endfor %}
+    </div>
   </div>
 
   <!-- Projects -->
   <div class="bg-white/10 border border-gray-700 rounded-xl p-6 backdrop-blur-sm shadow-lg">
     <h3 class="text-xl font-semibold text-white mb-4 border-b border-gray-600 pb-2">Top Projects</h3>
-    <ul class="space-y-4">
-      <li>
-        <a href="#" class="text-lg text-green-400 hover:underline">Project 1</a>
-        <p class="text-gray-400 text-sm">Brief info about Project 1...</p>
-      </li>
-      <li>
-        <a href="#" class="text-lg text-green-400 hover:underline">Project 2</a>
-        <p class="text-gray-400 text-sm">Brief info about Project 2...</p>
-      </li>
-      <li>
-        <a href="#" class="text-lg text-green-400 hover:underline">Project 3</a>
-        <p class="text-gray-400 text-sm">Brief info about Project 3...</p>
-      </li>
-    </ul>
+    <div class="projects-list">
+      {% for project in top_projects %}
+        <div class="project-card">
+        <h3>{{ project.title }}</h3>
+        {% if project.thumbnail %}
+          <img src="{{ project.thumbnail.url }}" alt="{{ project.title }}" width="200">
+        {% endif %}
+        <p>{{ project.short_description }}</p>
+        <a href="{% url 'project_detail' project.slug %}">View Project</a>
+        </div>
+      {% endfor %}
+    </div>
   </div>
 
 </section>

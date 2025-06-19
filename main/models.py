@@ -15,3 +15,12 @@ class BlogPost(models.Model):
 
     def __str__(self):
         return self.title
+    
+class Project(models.Model):
+    title = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+    description = models.TextField()
+    thumbnail = models.ImageField(upload_to='project_thumbs/')
+
+    def __str__(self):
+        return self.title

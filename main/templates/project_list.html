@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h1>All Projects</h1>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+    {% for project in projects %}
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        {% if project.thumbnail %}
+          <img src="{{ project.thumbnail.url }}" class="w-full h-48 object-cover" alt="{{ project.title }}">
+        {% endif %}
+        <div class="p-4">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ project.title }}</h2>
+          <a href="{% url 'project_detail' project.slug %}" class="text-blue-500 hover:underline">Read more →</a>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-gray-700 dark:text-gray-300">No projects yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s ease-in-out infinite;
+  margin-left: 8px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+
+<div style="max-width: 700px; margin: auto; padding: 2rem;">
+    <h1 style="font-size: 2rem; margin-bottom: 1rem;">DeepTrack Demo</h1>
+    <p style="margin-bottom: 2rem; color: #555;">Upload a video and a face image. We'll extract clips where the person appears. Simple as that.</p>
+
+    <form method="POST" enctype="multipart/form-data" action="{% url 'deeptrack_demo' %}">
+        {% csrf_token %}
+        <div style="margin-bottom: 1.5rem;">
+            <label for="video" style="display: block; margin-bottom: 0.5rem;">Upload Video</label>
+            <input type="file" name="video" accept="video/*" required style="width: 100%;">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="image" style="display: block; margin-bottom: 0.5rem;">Upload Face Image</label>
+            <input type="file" name="image" accept="image/*" required onchange="previewImage(event)" style="width: 100%;">
+        </div>
+
+        <div id="preview" style="margin-bottom: 2rem; display: none;">
+            <p style="margin-bottom: 0.5rem;">Preview:</p>
+            <img id="thumbnail" style="max-width: 100%; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
+        </div>
+
+        <button type="submit" 
+            style="padding: 0.8rem 1.5rem; background: linear-gradient(90deg, #1e3c72, #2a5298); color: white; border: none; border-radius: 5px; font-weight: bold;">
+            Extract Video
+        </button>
+    </form>
+</div>
+
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('preview');
+    const thumbnail = document.getElementById('thumbnail');
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            thumbnail.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+document.querySelector('form').addEventListener('submit', function () {
+    const btn = document.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = 'Processing... <span class="spinner"></span>';
+    
+    // Optional: show a loading spinner
+    const loader = document.createElement('div');
+    loader.innerText = 'Processing your video, please wait...';
+    loader.style.marginTop = '1rem';
+    loader.style.color = '#555';
+    document.querySelector('form').appendChild(loader);
+});
+</script>
+
+{% endblock %}
