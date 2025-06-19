@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from .models import BlogPost, Project
 import markdown2
@@ -8,6 +9,8 @@ import numpy as np
 import cv2
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from insightface.app import FaceAnalysis
+
+MAX_UPLOAD_SIZE = 500 * 1024 * 1024
 
 def home_view(request):
     latest_posts = BlogPost.objects.order_by('-created_at')[:3]
@@ -72,7 +75,8 @@ def deeptrack_demo(request):
         if not video or not image:
             context['error'] = "Both video and image are required."
             return render(request, 'deeptrack_demo.html', context)
-
+        if video and video.size > MAX_UPLOAD_SIZE:
+            return HttpResponse("Video file is too large (max 50 MB allowed).", status=400)
         video_path = default_storage.save('temp/video.mp4', video)
         image_path = default_storage.save('temp/image.jpg', image)
         video_full = os.path.join(settings.MEDIA_ROOT, video_path)

@@ -27,3 +27,5 @@ staticfiles/
 
 # Model
 models/models/buffalo_l*
+models/models/buffalo_l/
+

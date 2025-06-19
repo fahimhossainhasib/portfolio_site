@@ -25,7 +25,7 @@
         {% csrf_token %}
         <div style="margin-bottom: 1.5rem;">
             <label for="video" style="display: block; margin-bottom: 0.5rem;">Upload Video</label>
-            <input type="file" name="video" accept="video/*" required style="width: 100%;">
+            <input type="file" name="video" accept="video/*" required style="width: 100%;"  onchange="validateFileSize(event)">
         </div>
 
         <div style="margin-bottom: 1.5rem;">
@@ -35,7 +35,7 @@
 
         <div id="preview" style="margin-bottom: 2rem; display: none;">
             <p style="margin-bottom: 0.5rem;">Preview:</p>
-            <img id="thumbnail" style="max-width: 100%; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
+            <img id="thumbnail" style="width: 150px; height: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
         </div>
 
         <button type="submit" 
@@ -59,12 +59,23 @@ function previewImage(event) {
         reader.readAsDataURL(file);
     }
 }
+function validateFileSize(event) {
+    const file = event.target.files[0];
+    const maxSize = 50 * 1024 * 1024; 
+
+    if (file.size > maxSize) {
+        alert("File size exceeds 50 MB. Please select a smaller file.");
+        event.target.value = ""; 
+        const preview = document.getElementById('preview');
+        if(preview) preview.style.display = 'none'; 
+    }
+}
+
 document.querySelector('form').addEventListener('submit', function () {
     const btn = document.querySelector('button[type="submit"]');
     btn.disabled = true;
     btn.innerHTML = 'Processing... <span class="spinner"></span>';
     
-    // Optional: show a loading spinner
     const loader = document.createElement('div');
     loader.innerText = 'Processing your video, please wait...';
     loader.style.marginTop = '1rem';
