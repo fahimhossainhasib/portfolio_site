@@ -8,5 +8,5 @@ urlpatterns = [
     path('projects/<slug:slug>/', views.project_detail, name='project_detail'),
     path('projects/<slug:slug>/demo/', views.project_demo, name='project_demo'),
     path('projects/', views.project_list, name='project_list'),
-    path('deeptrack_demo/', views.deeptrack_demo, name='deeptrack_demo')
+    path('faceclip_demo/', views.faceclip_demo, name='faceclip_demo')
 ]

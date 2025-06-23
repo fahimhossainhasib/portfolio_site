@@ -10,7 +10,7 @@ import cv2
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from insightface.app import FaceAnalysis
 
-MAX_UPLOAD_SIZE = 500 * 1024 * 1024
+MAX_UPLOAD_SIZE = 50 * 1024 * 1024
 
 def home_view(request):
     latest_posts = BlogPost.objects.order_by('-created_at')[:3]
@@ -53,7 +53,7 @@ def extract_embeddings(img_path, model):
 def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
-def group_timestamps(timestamps, fps, max_gap=1.0):
+def group_timestamps(timestamps, fps, max_gap=0.5):
     if not timestamps:
         return []
     segments = []
@@ -67,7 +67,7 @@ def group_timestamps(timestamps, fps, max_gap=1.0):
     segments.append((start, prev + 1/fps))
     return segments
 
-def deeptrack_demo(request):
+def faceclip_demo(request):
     context = {}
     if request.method == 'POST':
         video = request.FILES.get('video')
@@ -84,7 +84,7 @@ def deeptrack_demo(request):
 
         try:
             model_root = os.path.join("models")
-            model = FaceAnalysis(name='buffalo_l', root=model_root, providers=["CUDAExecutionProvider"])
+            model = FaceAnalysis(name='buffalo_s', root=model_root, providers=["CUDAExecutionProvider"])
             model.prepare(ctx_id=0)
 
             ref_embedding = extract_embeddings(image_full, model)
@@ -122,4 +122,4 @@ def deeptrack_demo(request):
         except Exception as e:
             context['error'] = str(e)
 
-    return render(request, 'deeptrack_demo.html', context)
+    return render(request, 'faceclip_demo.html', context)

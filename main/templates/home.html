@@ -1,38 +1,36 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}Home - Fahim{% endblock %}
-
 {% block content %}
-<!-- Hero -->
 <section class="text-center">
   <img src="{% static 'img/profile.jpg' %}" alt="Fahim's Photo"
-       class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-gray-700 shadow-md">
+       class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full mx-auto mb-4 border-4 border-gray-700 shadow-md"
   <h2 class="text-3xl font-bold">Hi, I'm Fahim</h2>
-  <p class="text-gray-400 mt-2">A machine learning enthusiast & full-stack tinkerer</p>
+  <p class="text-gray-400 mt-2">AI Researcher & Developer</p>
 </section>
-
-<!-- Recent Posts and Projects -->
 <section class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-
-  <!-- Blog Posts -->
   <div class="bg-white/10 border border-gray-700 rounded-xl p-6 backdrop-blur-sm shadow-lg">
-    <h3 class="text-xl font-semibold text-white mb-4 border-b border-gray-600 pb-2">Top Blog Posts</h3>
-    <div class="grid md:grid-cols-3 gap-4">
-      {% for post in latest_posts %}
-        <a href="{% url 'blog_detail' slug=post.slug %}" class="block rounded overflow-hidden shadow hover:shadow-lg transition">
-        {% if post.thumbnail %}
-        <img src="{{ post.thumbnail.url }}" alt="{{ post.title }}" class="w-full h-48 object-cover">
-      {% endif %}
-      <div class="p-4 bg-white dark:bg-gray-800">
-        <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ post.title }}</h3>
-      </div>
-        </a>
-      {% endfor %}
-    </div>
-  </div>
+  <h3 class="text-xl font-semibold text-white mb-4 border-b border-gray-600 pb-2">Top Blog Posts</h3>
 
-  <!-- Projects -->
+  <div class="grid md:grid-cols-3 gap-4">
+    {% for post in latest_posts %}
+      <a href="{% url 'blog_detail' slug=post.slug %}" 
+         class="block rounded overflow-hidden shadow hover:shadow-lg transition bg-white dark:bg-gray-800 h-[350px]">
+
+        {% if post.thumbnail %}
+          <img src="{{ post.thumbnail.url }}" alt="{{ post.title }}" class="w-full h-48 object-cover">
+        {% endif %}
+
+        <div class="p-4">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-white overflow-hidden line-clamp-5">
+            {{ post.title }}
+          </h3>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
   <div class="bg-white/10 border border-gray-700 rounded-xl p-6 backdrop-blur-sm shadow-lg">
     <h3 class="text-xl font-semibold text-white mb-4 border-b border-gray-600 pb-2">Top Projects</h3>
     <div class="projects-list">
@@ -48,6 +46,5 @@
       {% endfor %}
     </div>
   </div>
-
 </section>
 {% endblock %}

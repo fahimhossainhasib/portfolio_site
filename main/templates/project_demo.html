@@ -18,10 +18,13 @@
 </style>
 
 <div style="max-width: 700px; margin: auto; padding: 2rem;">
-    <h1 style="font-size: 2rem; margin-bottom: 1rem;">DeepTrack Demo</h1>
-    <p style="margin-bottom: 2rem; color: #555;">Upload a video and a face image. We'll extract clips where the person appears. Simple as that.</p>
+    <div style="background-color: #fff4e5; border: 1px solid #ffc107; color: #7a4f01; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+        ⚠️ <strong>Looking for a faster and more accurate version?</strong> Please contact the developer</a>.
+    </div>
+    <h1 style="font-size: 2rem; margin-bottom: 1rem;">FaceClip Demo</h1>
+    <p style="margin-bottom: 2rem; color: #f2eded;">Upload a video and a face image. We'll extract clips where the person appears. Simple as that.</p>
 
-    <form method="POST" enctype="multipart/form-data" action="{% url 'deeptrack_demo' %}">
+    <form method="POST" enctype="multipart/form-data" action="{% url 'faceclip_demo' %}">
         {% csrf_token %}
         <div style="margin-bottom: 1.5rem;">
             <label for="video" style="display: block; margin-bottom: 0.5rem;">Upload Video</label>
