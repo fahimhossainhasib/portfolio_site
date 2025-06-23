@@ -67,7 +67,7 @@ def group_timestamps(timestamps, fps, max_gap=0.5):
     segments.append((start, prev + 1/fps))
     return segments
 
-def faceclip_demo(request):
+def clipsniper_demo(request):
     context = {}
     if request.method == 'POST':
         video = request.FILES.get('video')

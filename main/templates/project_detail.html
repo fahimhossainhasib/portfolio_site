@@ -1,18 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-
 <div class="project-detail" style="max-width: 800px; margin: auto; padding: 2rem;">
     <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">{{ project.title }}</h1>
-    
     {% if project.thumbnail %}
         <img src="{{ project.thumbnail.url }}" alt="{{ project.title }}" style="width: 300px; display: block; margin: 0 auto 1rem auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
-
-    {% endif %}
-    
+    {% endif %}    
     <p style="font-size: 1.1rem; line-height: 1.7; color: #333;">
         {{ project.description|linebreaks }}
     </p>
-
     <div style="margin-top: 2rem;">
         <a href="{% url 'project_detail' project.slug %}demo/"
             style="padding: 0.8rem 1.5rem; background: linear-gradient(90deg, #1e3c72, #2a5298); color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">

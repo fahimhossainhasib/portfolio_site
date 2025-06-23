@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <style>
 .spinner {
@@ -16,38 +15,32 @@
   to { transform: rotate(360deg); }
 }
 </style>
-
 <div style="max-width: 700px; margin: auto; padding: 2rem;">
     <div style="background-color: #fff4e5; border: 1px solid #ffc107; color: #7a4f01; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
         ⚠️ <strong>Looking for a faster and more accurate version?</strong> Please contact the developer</a>.
     </div>
     <h1 style="font-size: 2rem; margin-bottom: 1rem;">FaceClip Demo</h1>
     <p style="margin-bottom: 2rem; color: #f2eded;">Upload a video and a face image. We'll extract clips where the person appears. Simple as that.</p>
-
     <form method="POST" enctype="multipart/form-data" action="{% url 'faceclip_demo' %}">
         {% csrf_token %}
         <div style="margin-bottom: 1.5rem;">
             <label for="video" style="display: block; margin-bottom: 0.5rem;">Upload Video</label>
             <input type="file" name="video" accept="video/*" required style="width: 100%;"  onchange="validateFileSize(event)">
         </div>
-
         <div style="margin-bottom: 1.5rem;">
             <label for="image" style="display: block; margin-bottom: 0.5rem;">Upload Face Image</label>
             <input type="file" name="image" accept="image/*" required onchange="previewImage(event)" style="width: 100%;">
         </div>
-
         <div id="preview" style="margin-bottom: 2rem; display: none;">
             <p style="margin-bottom: 0.5rem;">Preview:</p>
             <img id="thumbnail" style="width: 150px; height: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
         </div>
-
         <button type="submit" 
             style="padding: 0.8rem 1.5rem; background: linear-gradient(90deg, #1e3c72, #2a5298); color: white; border: none; border-radius: 5px; font-weight: bold;">
             Extract Video
         </button>
     </form>
 </div>
-
 <script>
 function previewImage(event) {
     const file = event.target.files[0];
@@ -65,7 +58,6 @@ function previewImage(event) {
 function validateFileSize(event) {
     const file = event.target.files[0];
     const maxSize = 50 * 1024 * 1024; 
-
     if (file.size > maxSize) {
         alert("File size exceeds 50 MB. Please select a smaller file.");
         event.target.value = ""; 
@@ -73,12 +65,10 @@ function validateFileSize(event) {
         if(preview) preview.style.display = 'none'; 
     }
 }
-
 document.querySelector('form').addEventListener('submit', function () {
     const btn = document.querySelector('button[type="submit"]');
     btn.disabled = true;
-    btn.innerHTML = 'Processing... <span class="spinner"></span>';
-    
+    btn.innerHTML = 'Processing... <span class="spinner"></span>';   
     const loader = document.createElement('div');
     loader.innerText = 'Processing your video, please wait...';
     loader.style.marginTop = '1rem';
@@ -86,5 +76,4 @@ document.querySelector('form').addEventListener('submit', function () {
     document.querySelector('form').appendChild(loader);
 });
 </script>
-
 {% endblock %}
