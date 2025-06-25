@@ -74,7 +74,7 @@ def clipsniper_demo(request):
         image = request.FILES.get('image')
         if not video or not image:
             context['error'] = "Both video and image are required."
-            return render(request, 'deeptrack_demo.html', context)
+            return render(request, 'project_demo.html', context)
         if video and video.size > MAX_UPLOAD_SIZE:
             return HttpResponse("Video file is too large (max 50 MB allowed).", status=400)
         video_path = default_storage.save('temp/video.mp4', video)
@@ -84,8 +84,8 @@ def clipsniper_demo(request):
 
         try:
             model_root = os.path.join("models")
-            model = FaceAnalysis(name='buffalo_s', root=model_root, providers=["CUDAExecutionProvider"])
-            model.prepare(ctx_id=0)
+            model = FaceAnalysis(name='buffalo_s', root=model_root)
+            model.prepare(ctx_id=-1, det_size=(320, 240))
 
             ref_embedding = extract_embeddings(image_full, model)
 
