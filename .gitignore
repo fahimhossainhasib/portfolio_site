@@ -22,7 +22,6 @@ __pycache__/
 .env
 
 # Media and static files
-media/
 staticfiles/
 
 # Model
