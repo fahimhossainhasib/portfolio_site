@@ -122,4 +122,4 @@ def clipsniper_demo(request):
         except Exception as e:
             context['error'] = str(e)
 
-    return render(request, 'faceclip_demo.html', context)
+    return render(request, 'clipsniper_demo.html', context)
