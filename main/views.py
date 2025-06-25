@@ -84,8 +84,8 @@ def clipsniper_demo(request):
 
         try:
             model_root = os.path.join("models")
-            model = FaceAnalysis(name='buffalo_s', root=model_root)
-            model.prepare(ctx_id=-1, det_size=(320, 240))
+            model = FaceAnalysis(name='buffalo_sc', root=model_root)
+            model.prepare(ctx_id=-1)
 
             ref_embedding = extract_embeddings(image_full, model)
 
