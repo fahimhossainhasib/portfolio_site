@@ -10,6 +10,9 @@ import cv2
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from insightface.app import FaceAnalysis
 
+model_root = os.path.join("models")
+model = FaceAnalysis(name='buffalo_sc', root=model_root)
+model.prepare(ctx_id=-1)
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024
 
 def home_view(request):
@@ -83,10 +86,6 @@ def clipsniper_demo(request):
         image_full = os.path.join(settings.MEDIA_ROOT, image_path)
 
         try:
-            model_root = os.path.join("models")
-            model = FaceAnalysis(name='buffalo_sc', root=model_root)
-            model.prepare(ctx_id=-1)
-
             ref_embedding = extract_embeddings(image_full, model)
 
             cap = cv2.VideoCapture(video_full)
@@ -123,3 +122,4 @@ def clipsniper_demo(request):
             context['error'] = str(e)
 
     return render(request, 'clipsniper_demo.html', context)
+
