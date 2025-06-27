@@ -103,12 +103,13 @@ def process_video_job(job_id, video_path, image_path):
         print("Cap Released")
         segments = group_timestamps(match_timestamps, fps)
         print("Timestamps Grouped")
-        video_clip = VideoFileClip(video_path)
         print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
         del cap
         del ref_embedding
         del faces
         gc.collect()
+        print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
+        video_clip = VideoFileClip(video_path)        
         print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
         try:
             w, h = video_clip.size
