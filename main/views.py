@@ -177,8 +177,8 @@ def delete_after_delay(file_path, status_path, delay_seconds=3600):
     def delete_file():
         try:
             if os.path.exists(file_path) and os.path.exists(status_path):
-                os.remove(file_path)
-                os.remove(status_path)
+                # os.remove(file_path)
+                # os.remove(status_path)
                 print(f"[INFO] Deleted output: {file_path}")
         except Exception as e:
             print(f"[WARNING] Failed to delete output file {file_path}: {e}")
