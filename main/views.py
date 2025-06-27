@@ -113,8 +113,7 @@ def process_video_job(job_id, video_path, image_path):
             final.close()
         finally:
             video_clip.close()
-        with open(status_path, 'w') as f:
-            json.dump({"done": True, "output_url": f"{settings.MEDIA_URL}output/{job_id}.mp4"}, f)
+        atomic_write_json({"done": True, "output_url": f"{settings.MEDIA_URL}output/{job_id}.mp4"}, status_path)
         try:
             os.remove(video_path)
             os.remove(image_path)
@@ -125,6 +124,11 @@ def process_video_job(job_id, video_path, image_path):
         with open(status_path, 'w') as f:
             json.dump({"done": False, "error": str(e)}, f)
 
+def atomic_write_json(data, path):
+    tmp_path = path + ".tmp"
+    with open(tmp_path, 'w') as f:
+        json.dump(data, f)
+    os.replace(tmp_path, path)
 
 def clipsniper_demo(request):
     job_id = request.GET.get("job_id")
@@ -167,9 +171,13 @@ def check_status(request):
     if not os.path.exists(status_path):
         return JsonResponse({"done": False})
     try:
+        if os.path.getsize(status_path) == 0:
+            raise ValueError("Status file is empty")
         with open(status_path) as f:
             data = json.load(f)
         return JsonResponse(data)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Corrupted or incomplete JSON"}, status=500)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
