@@ -99,7 +99,9 @@ def process_video_job(job_id, video_path, image_path):
                 with open(status_path, 'w') as f:
                     json.dump({"done": False, "progress": int((idx/total_frames)*100)}, f)
         cap.release()
+        print("Cap Released")
         segments = group_timestamps(match_timestamps, fps)
+        print("Timestamps Grouped")
         video_clip = VideoFileClip(video_path)
         try:
             w, h = video_clip.size
@@ -110,9 +112,11 @@ def process_video_job(job_id, video_path, image_path):
             output_path = os.path.join(output_dir, f"{job_id}.mp4")
             final.write_videofile(output_path, codec="libx264", audio=True, fps=fps)
             final.close()
+            print("Video Written")
         finally:
             video_clip.close()
         atomic_write_json({"done": True, "output_url": f"{settings.MEDIA_URL}output/{job_id}.mp4"}, status_path)
+        print("Changed JSON File")
         try:
             os.remove(video_path)
             os.remove(image_path)
@@ -168,10 +172,11 @@ def check_status(request):
         return JsonResponse({"error": "job_id required"}, status=400)
     status_path = os.path.join(settings.MEDIA_ROOT, "status", f"{job_id}.json")
     if not os.path.exists(status_path):
-        return JsonResponse({"done": False})
+        print("No Status Path")
+        return JsonResponse({"done": False, "progress": 0})
     try:
         if os.path.getsize(status_path) == 0:
-            raise ValueError("Status file is empty")
+            return JsonResponse({"done": False, "progress": 0})
         with open(status_path) as f:
             data = json.load(f)
         return JsonResponse(data)
