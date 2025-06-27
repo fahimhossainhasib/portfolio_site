@@ -10,7 +10,8 @@ import cv2
 import uuid
 import json
 import threading
-import time
+import gc
+import psutil
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from insightface.app import FaceAnalysis
 
@@ -103,10 +104,19 @@ def process_video_job(job_id, video_path, image_path):
         segments = group_timestamps(match_timestamps, fps)
         print("Timestamps Grouped")
         video_clip = VideoFileClip(video_path)
+        print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
+        del cap
+        del ref_embedding
+        del faces
+        del model
+        gc.collect()
+        print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
         try:
             w, h = video_clip.size
             clips = [video_clip.subclip(start, end) for start, end in segments]
-            final = concatenate_videoclips(clips).resize((w, h))
+            print("Before Concat")
+            final = concatenate_videoclips(clips, method="chain").resize((w, h))
+            print("After Concat")
             output_dir = os.path.join(settings.MEDIA_ROOT, "output")
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, f"{job_id}.mp4")
