@@ -108,7 +108,6 @@ def process_video_job(job_id, video_path, image_path):
         del cap
         del ref_embedding
         del faces
-        del model
         gc.collect()
         print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
         try:
