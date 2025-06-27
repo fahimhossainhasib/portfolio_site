@@ -15,17 +15,20 @@
   to { transform: rotate(360deg); }
 }
 </style>
+
 <div style="max-width: 700px; margin: auto; padding: 2rem;">
     <div style="background-color: #fff4e5; border: 1px solid #ffc107; color: #7a4f01; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
-        ⚠️ <strong>Looking for a faster and more accurate version?</strong> Please contact the developer</a>.
+        ⚠️ <strong>Looking for a faster and more accurate version?</strong> Please contact the developer.
     </div>
     <h1 style="font-size: 2rem; margin-bottom: 1rem;">ClipSniper Demo</h1>
-    <p style="margin-bottom: 2rem; color: #f2eded;">Upload a video and a face image. We'll extract clips where the person appears. Simple as that.</p>
-    <form method="POST" enctype="multipart/form-data" action="{% url 'clipsniper_demo' %}">
+    <p style="margin-bottom: 2rem; color: #f2eded;">
+        Upload a video and a face image. We'll extract clips where the person appears. Simple as that.
+    </p>
+    <form id="uploadForm" enctype="multipart/form-data" method="POST" action="{% url 'clipsniper_demo' %}">
         {% csrf_token %}
         <div style="margin-bottom: 1.5rem;">
             <label for="video" style="display: block; margin-bottom: 0.5rem;">Upload Video</label>
-            <input type="file" name="video" accept="video/*" required style="width: 100%;"  onchange="validateFileSize(event)">
+            <input type="file" name="video" accept="video/*" required style="width: 100%;" onchange="validateFileSize(event)">
         </div>
         <div style="margin-bottom: 1.5rem;">
             <label for="image" style="display: block; margin-bottom: 0.5rem;">Upload Face Image</label>
@@ -36,11 +39,14 @@
             <img id="thumbnail" style="width: 150px; height: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
         </div>
         <button type="submit" 
-            style="padding: 0.8rem 1.5rem; background: linear-gradient(90deg, #1e3c72, #2a5298); color: white; border: none; border-radius: 5px; font-weight: bold;">
+                style="padding: 0.8rem 1.5rem; background: linear-gradient(90deg, #1e3c72, #2a5298); color: white; border: none; border-radius: 5px; font-weight: bold;">
             Extract Video
         </button>
     </form>
+
+    <div id="statusMessage" style="margin-top: 1rem; color: #555;"></div>
 </div>
+
 <script>
 function previewImage(event) {
     const file = event.target.files[0];
@@ -48,32 +54,98 @@ function previewImage(event) {
     const thumbnail = document.getElementById('thumbnail');
     if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = e => {
             thumbnail.src = e.target.result;
             preview.style.display = 'block';
         };
         reader.readAsDataURL(file);
     }
 }
+
 function validateFileSize(event) {
     const file = event.target.files[0];
-    const maxSize = 50 * 1024 * 1024; 
+    const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
         alert("File size exceeds 50 MB. Please select a smaller file.");
-        event.target.value = ""; 
+        event.target.value = "";
         const preview = document.getElementById('preview');
-        if(preview) preview.style.display = 'none'; 
+        if (preview) preview.style.display = 'none';
     }
 }
-document.querySelector('form').addEventListener('submit', function () {
-    const btn = document.querySelector('button[type="submit"]');
+
+const form = document.getElementById('uploadForm');
+const statusMessage = document.getElementById('statusMessage');
+
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true;
-    btn.innerHTML = 'Processing... <span class="spinner"></span>';   
-    const loader = document.createElement('div');
-    loader.innerText = 'Processing your video, please wait...';
-    loader.style.marginTop = '1rem';
-    loader.style.color = '#555';
-    document.querySelector('form').appendChild(loader);
+    btn.innerHTML = 'Processing... <span class="spinner"></span>';
+    statusMessage.textContent = 'Uploading files...';
+
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            statusMessage.textContent = 'Upload failed: ' + text;
+            btn.disabled = false;
+            btn.innerHTML = 'Extract Video';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!data.job_id) {
+            statusMessage.textContent = 'No job ID returned from server.';
+            btn.disabled = false;
+            btn.innerHTML = 'Extract Video';
+            return;
+        }
+
+        statusMessage.textContent = 'Upload successful. Processing started...';
+        pollJobStatus(data.job_id, btn);
+
+    } catch (error) {
+        statusMessage.textContent = 'Error: ' + error.message;
+        btn.disabled = false;
+        btn.innerHTML = 'Extract Video';
+    }
 });
+
+function pollJobStatus(jobId, btn) {
+    fetch(`/check_status?job_id=${jobId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                statusMessage.textContent = "Error: " + data.error;
+                btn.disabled = false;
+                btn.innerHTML = 'Extract Video';
+                return;
+            }
+            if (data.done) {
+                statusMessage.textContent = "Processing complete! Redirecting...";
+                window.location.href = `/clipsniper_demo/?job_id=${jobId}`;
+            } else {
+                statusMessage.textContent = `Processing... Progress: ${data.progress || 0}%`;
+                setTimeout(() => pollJobStatus(jobId, btn), 3000);
+            }
+        })
+        .catch(err => {
+            statusMessage.textContent = "Status check failed: " + err.message;
+            btn.disabled = false;
+            btn.innerHTML = 'Extract Video';
+        });
+}
 </script>
+
 {% endblock %}

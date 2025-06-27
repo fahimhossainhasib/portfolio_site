@@ -8,5 +8,6 @@ urlpatterns = [
     path('projects/<slug:slug>/', views.project_detail, name='project_detail'),
     path('projects/<slug:slug>/demo/', views.project_demo, name='project_demo'),
     path('projects/', views.project_list, name='project_list'),
-    path('clipsniper_demo/', views.clipsniper_demo, name='clipsniper_demo')
+    path('clipsniper_demo/', views.clipsniper_demo, name='clipsniper_demo'),
+    path('check_status', views.check_status, name='check_status')
 ]
