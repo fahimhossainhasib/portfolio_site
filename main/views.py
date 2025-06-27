@@ -88,7 +88,8 @@ def process_video_job(job_id, video_path, image_path):
             if not ret:
                 break
             faces = model.get(frame)
-            for f in faces:
+            faces = sorted(faces, key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]), reverse=True)
+            for f in faces[:3]:
                 sim = cosine_similarity(ref_embedding, f.embedding)
                 if sim > 0.5:
                     timestamp = idx / fps
@@ -162,14 +163,15 @@ def check_status(request):
     job_id = request.GET.get("job_id")
     if not job_id:
         return JsonResponse({"error": "job_id required"}, status=400)
-
     status_path = os.path.join(settings.MEDIA_ROOT, "status", f"{job_id}.json")
     if not os.path.exists(status_path):
         return JsonResponse({"done": False})
-
-    with open(status_path) as f:
-        data = json.load(f)
-    return JsonResponse(data)
+    try:
+        with open(status_path) as f:
+            data = json.load(f)
+        return JsonResponse(data)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 def delete_after_delay(file_path, status_path, delay_seconds=3600):
     def delete_file():
