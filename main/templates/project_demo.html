@@ -122,9 +122,48 @@ form.addEventListener('submit', async function(e) {
     }
 });
 
+// function pollJobStatus(jobId, btn) {
+//     fetch(`/check_status?job_id=${jobId}`)
+//         .then(res => res.json())
+//         .then(data => {
+//             if (data.error) {
+//                 statusMessage.textContent = "Error: " + data.error;
+//                 btn.disabled = false;
+//                 btn.innerHTML = 'Extract Video';
+//                 return;
+//             }
+//             if (data.done) {
+//                 statusMessage.textContent = "Processing complete! Redirecting...";
+//                 window.location.href = `/clipsniper_demo/?job_id=${jobId}`;
+//             } else {
+//                 statusMessage.textContent = `Processing... Progress: ${data.progress || 0}%`;
+//                 setTimeout(() => pollJobStatus(jobId, btn), 3000);
+//             }
+//         })
+//         .catch(err => {
+//             statusMessage.textContent = "Status check failed: " + err.message;
+//             btn.disabled = false;
+//             btn.innerHTML = 'Extract Video';
+//         });
+// }
+
 function pollJobStatus(jobId, btn) {
     fetch(`/check_status?job_id=${jobId}`)
-        .then(res => res.json())
+        .then(async res => {
+            const text = await res.text();
+            if (!res.ok) {
+                console.warn(`Non-200 response: ${res.status}`);
+                throw new Error(`HTTP ${res.status}`);
+            }
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (err) {
+                console.warn("Empty or invalid JSON, will retry...");
+                return { done: false, progress: 0 };
+            }
+            return data;
+        })
         .then(data => {
             if (data.error) {
                 statusMessage.textContent = "Error: " + data.error;
@@ -141,11 +180,12 @@ function pollJobStatus(jobId, btn) {
             }
         })
         .catch(err => {
-            statusMessage.textContent = "Status check failed: " + err.message;
-            btn.disabled = false;
-            btn.innerHTML = 'Extract Video';
+            console.warn("Polling failed or backend sleeping. Will retry in 3s:", err.message);
+            setTimeout(() => pollJobStatus(jobId, btn), 3000);  // retry again
         });
 }
+
+
 </script>
 
 {% endblock %}
