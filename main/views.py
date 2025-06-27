@@ -99,7 +99,6 @@ def process_video_job(job_id, video_path, image_path):
                 with open(status_path, 'w') as f:
                     json.dump({"done": False, "progress": int((idx/total_frames)*100)}, f)
         cap.release()
-
         segments = group_timestamps(match_timestamps, fps)
         video_clip = VideoFileClip(video_path)
         try:
