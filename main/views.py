@@ -90,7 +90,6 @@ def process_video_job(job_id, video_path, image_path):
             if not ret:
                 break
             faces = model.get(frame)
-            faces = sorted(faces, key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]), reverse=True)
             for f in faces[:3]:
                 sim = cosine_similarity(ref_embedding, f.embedding)
                 if sim > 0.4:
@@ -99,15 +98,13 @@ def process_video_job(job_id, video_path, image_path):
                     print(f"[MATCH] Found at frame {idx}, time={timestamp:.2f}s, sim={sim:.2f}")
                     break
             if idx % 10 == 0:
-                with open(status_path, 'w') as f:
-                    json.dump({"done": False, "progress": int((idx/total_frames)*100)}, f)
+                atomic_write_json({"done": False, "progress": int((idx/total_frames)*100)}, status_path)
         cap.release()
         segments = group_timestamps(match_timestamps, fps)
         segments = [(s, e) for s, e in segments if e - s > 0.1]
         if not segments:
             print("[WARNING] No matching segments found.")
-            with open(status_path, 'w') as f:
-                json.dump({"done": True, "output_url": None, "message": "No matching clips found"}, f)
+            atomic_write_json({"done": False, "output_url": None, "message": "No matching clips found"}, status_path)
             return
         del cap
         del ref_embedding
@@ -191,7 +188,7 @@ def clipsniper_demo(request):
         return render(request, 'clipsniper_demo.html', context)
     else:
         return render(request, 'project_demo.html', context)
-
+    
 def check_status(request):
     job_id = request.GET.get("job_id")
     if not job_id:
@@ -202,13 +199,16 @@ def check_status(request):
         return JsonResponse({"done": False, "progress": 0})
     try:
         if os.path.getsize(status_path) == 0:
+            print("Empty status file")
             return JsonResponse({"done": False, "progress": 0})
         with open(status_path) as f:
             data = json.load(f)
         return JsonResponse(data)
     except json.JSONDecodeError:
-        return JsonResponse({"error": "Corrupted or incomplete JSON"}, status=500)
+        print("[ERROR] Corrupted or incomplete JSON")
+        return JsonResponse({"done": False, "progress": 0})
     except Exception as e:
+        print(f"[ERROR] check_status failed: {e}")
         return JsonResponse({"error": str(e)}, status=500)
 
 def delete_after_delay(file_path, status_path, delay_seconds=3600):
