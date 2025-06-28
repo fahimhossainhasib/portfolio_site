@@ -109,7 +109,7 @@ def process_video_job(job_id, video_path, image_path):
         del faces
         gc.collect()
         print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
-        video_clip = VideoFileClip(video_path)        
+        video_clip = VideoFileClip(video_path, audio=False)        
         print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
         try:
             w, h = video_clip.size
@@ -120,7 +120,7 @@ def process_video_job(job_id, video_path, image_path):
             output_dir = os.path.join(settings.MEDIA_ROOT, "output")
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, f"{job_id}.mp4")
-            final.write_videofile(output_path, codec="libx264", audio=True, fps=fps)
+            final.write_videofile(output_path, codec="libx264", audio=False, fps=fps)
             final.close()
             print("Video Written")
         finally:
