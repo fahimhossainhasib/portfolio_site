@@ -19,7 +19,7 @@ from insightface.app import FaceAnalysis
 model_root = os.path.join("models")
 model = FaceAnalysis(name='buffalo_sc', root=model_root)
 model.prepare(ctx_id=-1)
-MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+MAX_UPLOAD_SIZE = 25 * 1024 * 1024
 
 def home_view(request):
     latest_posts = BlogPost.objects.order_by('-created_at')[:3]
@@ -110,7 +110,6 @@ def process_video_job(job_id, video_path, image_path):
         del ref_embedding
         del faces
         gc.collect()
-        print("Before videoclip")
         resized_path = os.path.join(settings.MEDIA_ROOT, "temp_clips", f"{job_id}_resized.mp4")
         os.makedirs(os.path.dirname(resized_path), exist_ok=True)
         subprocess.run([
@@ -124,7 +123,6 @@ def process_video_job(job_id, video_path, image_path):
         print("Before Try")
         try:
             w, h = video_clip.size
-            print("Before subclips")
             clips = []
             target_height = 360
             print(f"[DEBUG] Total segments: {len(segments)}")
@@ -136,9 +134,7 @@ def process_video_job(job_id, video_path, image_path):
                 sub = sub.resize(height=target_height, width=int(w * scale))
                 clips.append(sub)
                 print(f"[DEBUG] Clip {i} added: {start:.2f}s → {end:.2f}s, resized")
-            print("Before Concat")
             final = concatenate_videoclips(clips, method="chain")
-            print("After Concat")
             output_dir = os.path.join(settings.MEDIA_ROOT, "output")
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, f"{job_id}.mp4")
@@ -179,7 +175,7 @@ def clipsniper_demo(request):
             context['error'] = "Both video and image are required."
             return render(request, 'project_demo.html', context)
         if video and video.size > MAX_UPLOAD_SIZE:
-            return HttpResponse("Video file is too large (max 50 MB allowed).", status=400)
+            return HttpResponse("Video file is too large (max 25 MB allowed).", status=400)
         job_id = str(uuid.uuid4())
         video_path = default_storage.save(f'temp/{job_id}_video.mp4', video)
         image_path = default_storage.save(f'temp/{job_id}_image.jpg', image)
@@ -228,8 +224,8 @@ def delete_after_delay(file_path, status_path, delay_seconds=3600):
     def delete_file():
         try:
             if os.path.exists(file_path) and os.path.exists(status_path):
-                # os.remove(file_path)
-                # os.remove(status_path)
+                os.remove(file_path)
+                os.remove(status_path)
                 print(f"[INFO] Deleted output: {file_path}")
         except Exception as e:
             print(f"[WARNING] Failed to delete output file {file_path}: {e}")

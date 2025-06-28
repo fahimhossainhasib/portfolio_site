@@ -64,7 +64,7 @@ function previewImage(event) {
 
 function validateFileSize(event) {
     const file = event.target.files[0];
-    const maxSize = 50 * 1024 * 1024; // 50MB
+    const maxSize = 25 * 1024 * 1024;
     if (file.size > maxSize) {
         alert("File size exceeds 50 MB. Please select a smaller file.");
         event.target.value = "";
