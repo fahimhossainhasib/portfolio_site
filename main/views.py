@@ -12,7 +12,7 @@ import json
 import threading
 import gc
 import psutil
-from itertools import starmap
+import subprocess
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from insightface.app import FaceAnalysis
 
@@ -111,7 +111,16 @@ def process_video_job(job_id, video_path, image_path):
         del faces
         gc.collect()
         print("Before videoclip")
-        video_clip = VideoFileClip(video_path, audio=False)        
+        resized_path = os.path.join(settings.MEDIA_ROOT, "temp_clips", f"{job_id}_resized.mp4")
+        os.makedirs(os.path.dirname(resized_path), exist_ok=True)
+        subprocess.run([
+            "ffmpeg", "-y", "-i", video_path,
+            "-vf", "scale=iw/2:ih/2",
+            "-c:v", "libx264", "-preset", "ultrafast",
+            "-c:a", "copy",
+            resized_path
+        ], check=True)
+        video_clip = VideoFileClip(resized_path, audio=False)
         print("Before Try")
         try:
             w, h = video_clip.size
@@ -140,6 +149,10 @@ def process_video_job(job_id, video_path, image_path):
             video_clip.close()
         atomic_write_json({"done": True, "output_url": f"{settings.MEDIA_URL}output/{job_id}.mp4"}, status_path)
         print("Changed JSON File")
+        try:
+            os.remove(resized_path)
+        except Exception as e:
+            print(f"Couldn't remove resized temp video: {e}")
         try:
             os.remove(video_path)
             os.remove(image_path)
