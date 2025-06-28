@@ -113,6 +113,7 @@ def process_video_job(job_id, video_path, image_path):
         del ref_embedding
         del faces
         gc.collect()
+        print("Before videoclip")
         video_clip = VideoFileClip(video_path, audio=False)        
         print("Before Try")
         try:
