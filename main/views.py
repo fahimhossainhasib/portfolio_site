@@ -12,6 +12,7 @@ import json
 import threading
 import gc
 import psutil
+from itertools import starmap
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from insightface.app import FaceAnalysis
 
@@ -100,22 +101,19 @@ def process_video_job(job_id, video_path, image_path):
                 with open(status_path, 'w') as f:
                     json.dump({"done": False, "progress": int((idx/total_frames)*100)}, f)
         cap.release()
-        print("Cap Released")
         segments = group_timestamps(match_timestamps, fps)
-        print("Timestamps Grouped")
-        print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
         del cap
         del ref_embedding
         del faces
         gc.collect()
-        print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
         video_clip = VideoFileClip(video_path, audio=False)        
-        print(f"[DEBUG] Available memory: {psutil.virtual_memory().available // (1024 * 1024)} MB")
+        print("Before Try")
         try:
             w, h = video_clip.size
-            clips = [video_clip.subclip(start, end) for start, end in segments]
+            print("Before subclips")
+            clips = starmap(video_clip.subclip, segments)
             print("Before Concat")
-            final = concatenate_videoclips(clips, method="chain").resize((w, h))
+            final = concatenate_videoclips(clips, method="chain")
             print("After Concat")
             output_dir = os.path.join(settings.MEDIA_ROOT, "output")
             os.makedirs(output_dir, exist_ok=True)
