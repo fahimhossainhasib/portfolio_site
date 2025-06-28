@@ -102,6 +102,7 @@ def process_video_job(job_id, video_path, image_path):
                     json.dump({"done": False, "progress": int((idx/total_frames)*100)}, f)
         cap.release()
         segments = group_timestamps(match_timestamps, fps)
+        segments = [(s, e) for s, e in segments if e - s > 0.1]
         del cap
         del ref_embedding
         del faces
@@ -113,7 +114,9 @@ def process_video_job(job_id, video_path, image_path):
             print("Before subclips")
             clips = []
             target_height = 360
+            print(f"[DEBUG] Total segments: {len(segments)}")
             for i, (start, end) in enumerate(segments):
+                print(f"[DEBUG] Trying segment {i}: {start:.2f} → {end:.2f}")
                 sub = video_clip.subclip(start, end)
                 w, h = sub.size
                 scale = target_height / h
