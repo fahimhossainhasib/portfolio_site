@@ -93,9 +93,10 @@ def process_video_job(job_id, video_path, image_path):
             faces = sorted(faces, key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]), reverse=True)
             for f in faces[:3]:
                 sim = cosine_similarity(ref_embedding, f.embedding)
-                if sim > 0.5:
+                if sim > 0.4:
                     timestamp = idx / fps
                     match_timestamps.append(timestamp)
+                    print(f"[MATCH] Found at frame {idx}, time={timestamp:.2f}s, sim={sim:.2f}")
                     break
             if idx % 10 == 0:
                 with open(status_path, 'w') as f:
@@ -103,6 +104,11 @@ def process_video_job(job_id, video_path, image_path):
         cap.release()
         segments = group_timestamps(match_timestamps, fps)
         segments = [(s, e) for s, e in segments if e - s > 0.1]
+        if not segments:
+            print("[WARNING] No matching segments found.")
+            with open(status_path, 'w') as f:
+                json.dump({"done": True, "output_url": None, "message": "No matching clips found"}, f)
+            return
         del cap
         del ref_embedding
         del faces
