@@ -111,7 +111,15 @@ def process_video_job(job_id, video_path, image_path):
         try:
             w, h = video_clip.size
             print("Before subclips")
-            clips = starmap(video_clip.subclip, segments)
+            clips = []
+            target_height = 360
+            for i, (start, end) in enumerate(segments):
+                sub = video_clip.subclip(start, end)
+                w, h = sub.size
+                scale = target_height / h
+                sub = sub.resize(height=target_height, width=int(w * scale))
+                clips.append(sub)
+                print(f"[DEBUG] Clip {i} added: {start:.2f}s → {end:.2f}s, resized")
             print("Before Concat")
             final = concatenate_videoclips(clips, method="chain")
             print("After Concat")
