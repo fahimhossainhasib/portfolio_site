@@ -149,13 +149,17 @@ function pollJobStatus(jobId, btn) {
                 btn.innerHTML = 'Extract Video';
                 return;
             }
-            if (data.done) {
+            if (data.message && !data.done) {
+                statusMessage.textContent = data.message;
+                btn.disabled = false;
+                btn.innerHTML = 'Extract Video';
+            } else if (data.done) {
                 statusMessage.textContent = "Processing complete! Redirecting...";
                 window.location.href = `/clipsniper_demo/?job_id=${jobId}`;
             } else {
                 statusMessage.textContent = `Processing... Progress: ${data.progress || 0}%`;
                 setTimeout(() => pollJobStatus(jobId, btn), 3000);
-            }
+            } 
         })
         .catch(err => {
             console.error("Polling error:", err);
@@ -164,9 +168,5 @@ function pollJobStatus(jobId, btn) {
             btn.innerHTML = 'Extract Video';
         });
 }
-
-
-
 </script>
-
 {% endblock %}

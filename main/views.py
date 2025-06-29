@@ -11,7 +11,7 @@ import uuid
 import json
 import threading
 import gc
-import psutil
+import time
 import subprocess
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from insightface.app import FaceAnalysis
@@ -92,10 +92,9 @@ def process_video_job(job_id, video_path, image_path):
             faces = model.get(frame)
             for f in faces[:3]:
                 sim = cosine_similarity(ref_embedding, f.embedding)
-                if sim > 0.4:
+                if sim > 0.45:
                     timestamp = idx / fps
                     match_timestamps.append(timestamp)
-                    print(f"[MATCH] Found at frame {idx}, time={timestamp:.2f}s, sim={sim:.2f}")
                     break
             if idx % 10 == 0:
                 atomic_write_json({"done": False, "progress": int((idx/total_frames)*100)}, status_path)
@@ -120,44 +119,38 @@ def process_video_job(job_id, video_path, image_path):
             resized_path
         ], check=True)
         video_clip = VideoFileClip(resized_path, audio=False)
-        print("Before Try")
         try:
             w, h = video_clip.size
             clips = []
             target_height = 360
-            print(f"[DEBUG] Total segments: {len(segments)}")
             for i, (start, end) in enumerate(segments):
-                print(f"[DEBUG] Trying segment {i}: {start:.2f} → {end:.2f}")
                 sub = video_clip.subclip(start, end)
                 w, h = sub.size
                 scale = target_height / h
                 sub = sub.resize(height=target_height, width=int(w * scale))
                 clips.append(sub)
-                print(f"[DEBUG] Clip {i} added: {start:.2f}s → {end:.2f}s, resized")
             final = concatenate_videoclips(clips, method="chain")
             output_dir = os.path.join(settings.MEDIA_ROOT, "output")
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, f"{job_id}.mp4")
             final.write_videofile(output_path, codec="libx264", audio=False, fps=fps)
             final.close()
-            print("Video Written")
         finally:
             video_clip.close()
         atomic_write_json({"done": True, "output_url": f"{settings.MEDIA_URL}output/{job_id}.mp4"}, status_path)
-        print("Changed JSON File")
         try:
             os.remove(resized_path)
-        except Exception as e:
-            print(f"Couldn't remove resized temp video: {e}")
-        try:
             os.remove(video_path)
             os.remove(image_path)
+            del sub 
+            del clips 
+            del final
+            gc.collect()
         except Exception as cleanup_err:
             print(f"[WARNING] Failed to delete temp files for job {job_id}: {cleanup_err}")
         delete_after_delay(output_path, status_path, delay_seconds=3600)
     except Exception as e:
-        with open(status_path, 'w') as f:
-            json.dump({"done": False, "error": str(e)}, f)
+        print(e)
 
 def atomic_write_json(data, path):
     tmp_path = path + ".tmp"
@@ -220,13 +213,13 @@ def check_status(request):
         print(f"[ERROR] check_status failed: {e}")
         return JsonResponse({"error": str(e)}, status=500)
 
-def delete_after_delay(file_path, status_path, delay_seconds=3600):
+def delete_after_delay(*paths, delay_seconds=3600):
     def delete_file():
-        try:
-            if os.path.exists(file_path) and os.path.exists(status_path):
-                os.remove(file_path)
-                os.remove(status_path)
-                print(f"[INFO] Deleted output: {file_path}")
-        except Exception as e:
-            print(f"[WARNING] Failed to delete output file {file_path}: {e}")
-    threading.Timer(delay_seconds, delete_file).start()
+        time.sleep(delay_seconds)
+        for path in paths:
+            try:
+                if os.path.exists(path):
+                    os.remove(path)
+            except Exception as e:
+                print(f"[WARNING] Could not delete {path}: {e}")
+    threading.Thread(target=delete_file, daemon=True).start()
